@@ -175,6 +175,7 @@ abstract class Kohana_Gmaps3 {
 	{
     array_push($this->marks, array('lat'       => $lat, 
                                    'lon'       => $lon, 
+                                   'title'     => $title,
                                    'draggable' => $draggable,                                         
                                    'icon'      => $icon,
                                    'shadow'    => $shadow,
