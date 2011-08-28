@@ -939,8 +939,11 @@ abstract class Kohana_Gmaps3 {
 		// Set params
     if (!empty($address))
 		  $url .= '&address='.htmlentities($address);
-		else if (!empty($lat) && !empty($lon)) 
+		else if (!empty($lat) && !empty($lon))
+		{ 			
 			$url .= '&lat='.$lat.'&lon='.$lon;
+			die($url);	
+		}	
 		else
 		  throw new Kohana_Exception('You need add address or coordinates params');
 		  

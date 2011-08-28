@@ -7,3 +7,4 @@
     - [Polylines](examples/polylines)
     - [Circles](examples/circles)
     - [Rectangles](examples/rectangles)
+    - [Geocoding](examples/geocoding)
