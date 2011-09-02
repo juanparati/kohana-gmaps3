@@ -34,7 +34,7 @@ abstract class Kohana_Gmaps3 {
 		if (!isset(Gmaps3::$instance))
 		{
 			// Load the configuration for this type
-			$config = Kohana::config('qrcode');					
+			$config = Kohana::config('gmaps3');					
 			
 			// Create a new session instance
 			Gmaps3::$instance = new Gmaps3($config);
