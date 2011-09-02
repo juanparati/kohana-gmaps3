@@ -26,6 +26,6 @@ From Kohana you can:
 - Create coordinates groups
 - Create infowindows
 - Trigger auto open infowindow
-- Center, rotate, zoom over a defined region
+- Center, rotate, zoom and fit over a defined region
 ...
 

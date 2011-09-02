@@ -33,8 +33,8 @@ Example of the template:
 	</head>
 	<body>
 		
-		<!-- This layer will contain the map -->
-		<div id="map_container"></div>
+		<!-- This layer will contain the map -->		
+		<div id="map_container" style="width:500px;height:500px"></div>
 	
 	</body>
 	</head> 
@@ -58,4 +58,7 @@ The method
 	
 	$map->get_map([layer id])
 
-will display the map into [layer id]. Remember add to your map layer style and minimum widht and height 
+will display the map into [layer id]. 
+
+Remember add to your map layer a minimum width and height style.
+ 

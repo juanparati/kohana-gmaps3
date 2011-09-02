@@ -268,10 +268,10 @@ abstract class Kohana_Gmaps3 {
 	
   
   /**
-	 * Center the map position 
+	 * Center the map position in relation with a mark 
 	 *	       	 	 
 	 * @chainable
-	 * @param   integer  Mark id (FALSE = Center relative to all marks)   	 	 
+	 * @param   integer  Mark id (FALSE = Center relative to the last mark)   	 	 
 	 */
   public function center($mark_id = FALSE)
 	{
@@ -292,6 +292,113 @@ abstract class Kohana_Gmaps3 {
 	}
 	
 	
+	
+  /**
+	 * Center and fit the map position in relation with all map elements 
+	 *	       	 	 
+	 * @chainable
+	 * @param   boolean	Autofit   	 	 
+	 * @param   array		Exclude elements (marks, polylines, circles or rectangles)   	 
+	 */
+  public function center_all($autofit = TRUE, $exclude = array())
+  {
+  	
+  	if ($this->_last_key($this->marks) === FALSE)
+  		throw new Kohana_Exception('No marks for center.');
+  	
+  	$coords = $this->get_bounds($exclude);
+  	
+  	$max = ($coords['lat_max'] + $coords['lat_min']) / 2;
+  	$min = ($coords['lon_max'] + $coords['lon_min']) / 2;
+  	
+  	$this->jscod['center'] = "map_{$this->id}.setCenter(new google.maps.LatLng($max, $min));\n";
+  	
+  	if ($autofit)
+  	{
+  		$this->jscod['center'] .= "map_{$this->id}.fitBounds(
+				new google.maps.LatLngBounds(
+					new google.maps.LatLng({$coords['lat_min']}, {$coords['lon_min']}),
+					new google.maps.LatLng({$coords['lat_max']}, {$coords['lon_max']})
+				));\n";
+  	}
+  	
+	}
+	
+	/**
+	 * Get configuration configuration and options
+	 *	 	 
+	 * @param   string   Configuration key	 	  	 	 	    	 
+	 * @return  mixed
+	 */
+  public function get($key)
+  {
+  	return Arr::path($this->config, $key); 
+	}
+		
+	/**
+	 * Get the bounds of all map elements 
+	 *	       	 	 	 	    	 	 
+	 * @param		array		Exclude elements (marks, polylines, circles or rectangles)
+	 * @return	array   	 
+	 */
+	public function get_bounds($exclude = array())
+	{
+				
+		$lats = $lons = array();
+		
+		// Copy marks coordinates
+		if (!in_array('marks', $exclude))
+		{		           
+			$lats = Arr::merge(Arr::pluck($this->marks, 'lat'), $lats);
+			$lons = Arr::merge(Arr::pluck($this->marks, 'lon'), $lons);
+		}
+		
+		// Copy polylines coordinates
+		if (!in_array('polylines', $exclude))
+		{					
+			$lats = Arr::merge(Arr::pluck($this->coords, 'lat'), $lats);
+			$lons = Arr::merge(Arr::pluck($this->coords, 'lon'), $lons);
+		}
+		
+		// Copy circles coordinates
+		if (!in_array('circles', $exclude))
+		{		
+			$lats = Arr::merge(Arr::pluck($this->circles, 'lat'), $lats);
+			$lons = Arr::merge(Arr::pluck($this->circles, 'lon'), $lons);
+		}
+		
+		// Copy triangles coordinates
+		if (!in_array('rectangles', $exclude))
+		{	
+			foreach ($this->coords as $coords)
+			{	
+				$lats = Arr::merge(Arr::pluck($coords, 'lat'), $lats);
+				$lons = Arr::merge(Arr::pluck($coords, 'lon'), $lons);
+				
+				$lats = Arr::merge(Arr::pluck($coords, 'elat'), $lats);						
+				$lons = Arr::merge(Arr::pluck($coords, 'elon'), $lons);				
+			}
+		}
+		
+		if (sizeof($lats) && sizeof($lons))
+		{				
+			$bounds['lat_max'] = max($lats);
+			$bounds['lat_min'] = min($lats);
+			$bounds['lon_max'] = max($lons);
+			$bounds['lon_min'] = min($lons);
+		}
+		else
+		{
+			$bounds['lat_max'] = $this->config->default_lat;
+			$bounds['lat_min'] = $this->config->default_lat;
+			$bounds['lon_max'] = $this->config->default_lon;
+			$bounds['lon_min'] = $this->config->default_lon;
+		}	
+		
+		return $bounds;			
+	}
+	
+			
 	/**
 	 * Get georequest from coordinates
 	 *	       	
@@ -963,7 +1070,7 @@ abstract class Kohana_Gmaps3 {
       return FALSE;
 	}
 	
-	
+		
 	/**
 	 * Generate position points from an array
 	 * 
