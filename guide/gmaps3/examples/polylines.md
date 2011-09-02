@@ -12,10 +12,7 @@
 							 '#FF0000',				// Stroke color
 							 3						// Stroke weight
 							 );						// ... Fill opacity, Fill color	
-	
-	
-											
-	
+													
 	// Add coordinates
 	$map->add_coord('Finisterre2Aarhus', 42.907115, -9.261206);
 	$map->add_coord('Finisterre2Aarhus', 43.29976, -8.374586);
