@@ -28,5 +28,5 @@ From Kohana you can:
 - Trigger auto open infowindow and set infowindows groups
 - Center, rotate, zoom and fit over a defined region
 - Individual centering upon any element
-...
+and more ...
 
