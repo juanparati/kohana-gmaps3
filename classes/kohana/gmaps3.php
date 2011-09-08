@@ -5,8 +5,8 @@
  * @package    Gmaps v3
  * @author     Juan Lago D. <juanparati[at]gmail[dot]com>  
  * @copyright  (c) 2011 Kohana
- * @license    http://kohanaphp.com/license.htmlç
- * @version		 1.1 
+ * @license    http://kohanaphp.com/license.html
+ * @version		 1.5 
  */
  
 abstract class Kohana_Gmaps3 {
@@ -15,6 +15,7 @@ abstract class Kohana_Gmaps3 {
 	
 	private $config;
   private $id;  
+  private $last_key;
 				
 	protected $marks			= array();
 	protected $polys			= array();	
@@ -23,8 +24,8 @@ abstract class Kohana_Gmaps3 {
 	protected $coords			= array();
 	protected $infos			= array();
 	protected $jscod			= array();
-		  
-  public $lat;
+		    
+	public $lat;
 	public $lon;
 	
 	
@@ -65,7 +66,7 @@ abstract class Kohana_Gmaps3 {
 		// Save the config in the object
 		$this->config = $config;
 		
-		// set default lat and lon
+		// set last centered lat and lon 
 		$this->lat = $config->default_lat;
 		$this->lon = $config->default_lon;
 		
@@ -91,18 +92,19 @@ abstract class Kohana_Gmaps3 {
 	public function add_circle($lat, $lon, $radius = 50000, $strokecolor = '#000000', $strokeweight = 2, $strokeopacity = 1, $fillopacity = 0, $fillcolor = '#FF0000')
 	{
 	
-		array_push($this->circles, array('lat'						=> $lat, 
-                                   	 'lon'						=> $lon,
-																		 'radius'					=> $radius,
-																		 'strokeColor'		=> $strokecolor,
-																		 'strokeWeight'		=> $strokeweight,
-																		 'strokeOpacity'	=> $strokeopacity, 
-																		 'fillOpacity'		=> $fillopacity,
-																		 'fillColor'			=> $fillcolor,                                                                     
-                                   ));
+		$this->last_key = 'circle_'.(int)sizeof($this->circles);
+		
+		$this->circles[$this->last_key]['lat'] 						= $lat; 
+		$this->circles[$this->last_key]['lon'] 						= $lon;
+		$this->circles[$this->last_key]['radius']					= $radius;
+		$this->circles[$this->last_key]['strokeColor']		= $strokecolor;
+		$this->circles[$this->last_key]['strokeWeight']		= $strokeweight;
+		$this->circles[$this->last_key]['strokeOpacity']	= $strokeopacity;
+		$this->circles[$this->last_key]['fillOpacity']		= $fillopacity;
+		$this->circles[$this->last_key]['fillColor']			= $fillcolor;                                   	 																				 																				 																							 																							 					 																  				   
     
 		return $this;      
-			
+				
 	}
 	
 	
@@ -118,11 +120,13 @@ abstract class Kohana_Gmaps3 {
 	 */
 	public function add_coord($group, $lat, $lon)
 	{
-    $this->coords[$group][] = array('lat'	=> $lat, 
-                                   	'lon'	=> $lon                                    						                                    						 
-															 		 );                                         
-                                       
-    return $this;      
+	
+		$group = Inflector::camelize($group);
+		
+	  $this->coords[$group][] = array('lat' => $lat,
+   	                                'lon' => $lon);
+		                            						                                                              
+    return $this;      		    
 	}
 	
 	
@@ -133,25 +137,28 @@ abstract class Kohana_Gmaps3 {
 	 * @chainable	 	 
 	 * @param   string  Content (You can use HTML)	 	 	 	  	 
 	 * @param   boolean Opened (Optional)
+	 * @param		string	Group (Default group = 0)	 
 	 * @param   integer Mark id (FALSE = Last mark)   	          	       	 	 
 	 * @return  object
 	 */
-	public function add_infowindow($content, $opened = FALSE, $mark_id = FALSE)
+	public function add_infowindow($content, $opened = FALSE, $group = 0, $mark_id = FALSE)
 	{
     // Get mark id
     if ($mark_id === FALSE)
     {      
-      $mark_id = $this->_last_key($this->marks);            
+      $mark_id = $this->last_key;            
       
-      if ($mark_id === FALSE)
-        throw new Kohana_Exception('No marks for infowindow.');                                  
+      if (empty($mark_id))
+        throw new Kohana_Exception('You need define an element.');                                  
     }
-        
-	 	    	   
-	  // Add mark
-    array_push($this->infos, array('mark_id' => $mark_id, 
+        	 	    	  
+	  $group = Inflector::camelize($group);
+	  
+		// Add infowindow
+		$this->infos[$group][] = array('mark_id' => $mark_id, 
                                    'content' => $content, 
-                                   'opened'  => $opened));
+                                   'opened'  => $opened																	 															 
+																	);
                                          
     return $this;     	       
 	}
@@ -172,16 +179,18 @@ abstract class Kohana_Gmaps3 {
 	 * @return  object 
 	 */
 	public function add_mark($lat, $lon, $title = NULL, $draggable = FALSE, $icon = NULL, $shadow = '', $icon_ops = array(), $marker_ops = array())
-	{
-    array_push($this->marks, array('lat'       => $lat, 
-                                   'lon'       => $lon, 
-                                   'title'     => $title,
-                                   'draggable' => $draggable,                                         
-                                   'icon'      => $icon,
-                                   'shadow'    => $shadow,
-                                   'icon_ops'  => $icon_ops,
-                                   'marker_ops'=> $marker_ops,                                   
-                                   ));
+	{						      	    
+		    
+		$this->last_key = 'mark_'.(int)sizeof($this->marks);						 
+		
+		$this->marks[$this->last_key]['lat']				= $lat;
+		$this->marks[$this->last_key]['lon']				= $lon;
+		$this->marks[$this->last_key]['title']			= $title;
+		$this->marks[$this->last_key]['draggable']	= $draggable;
+		$this->marks[$this->last_key]['icon']				= $icon;
+		$this->marks[$this->last_key]['shadow']			= $shadow;
+		$this->marks[$this->last_key]['icon_ops']		= $icon_ops;
+		$this->marks[$this->last_key]['marker_ops']	= $marker_ops;				    
     
     return $this;      
 	}
@@ -202,7 +211,7 @@ abstract class Kohana_Gmaps3 {
 	 */
 	public function add_polygon_group($group, $strokecolor = '#000000', $strokeweight = 2, $strokeopacity = 1.0, $fillopacity = 0, $fillcolor = '#FF0000')
 	{
-		$this->_add_poly_group('Polygon', $group, $strokecolor, $strokeweight, $strokeopacity, $fillopacity, $fillcolor);																							                                 						                                    						 
+		$this->_add_poly_group('polygon', $group, $strokecolor, $strokeweight, $strokeopacity, $fillopacity, $fillcolor);																							                                 						                                    						 
 															 			                                                                                    
     return $this;      
 	}
@@ -222,7 +231,7 @@ abstract class Kohana_Gmaps3 {
 	 */
 	public function add_polyline_group($group, $strokecolor = '#000000', $strokeweight = 2, $strokeopacity = 1.0, $fillopacity = 0, $fillcolor = '#FF0000')
 	{
-  	$this->_add_poly_group('Polyline', $group, $strokecolor, $strokeweight, $strokeopacity, $fillopacity, $fillcolor);
+  	$this->_add_poly_group('polyline', $group, $strokecolor, $strokeweight, $strokeopacity, $fillopacity, $fillcolor);
 		
 		return $this;      
 	}
@@ -247,47 +256,101 @@ abstract class Kohana_Gmaps3 {
 	public function add_rectangle($lat, $lon, $elat, $elon, $strokecolor = '#000000', $strokeweight = 2, $strokeopacity = 1, $fillopacity = 0, $fillcolor = '#FF0000')
 	{
 	
-		array_push($this->rectangles, array('lat'						=> $lat, 
-                                		  	'lon'						=> $lon,
-                                   	 		'elat'					=> $elat,
-                                   	 		'elon'					=> $elon,																		 		
-																		 		'strokeColor'		=> $strokecolor,
-																		 		'strokeWeight'	=> $strokeweight,
-																		 		'strokeOpacity'	=> $strokeopacity, 
-																		 		'fillOpacity'		=> $fillopacity,
-																		 		'fillColor'			=> $fillcolor,                                                                     
-                                   		 ));
-    
+		$this->last_key = 'rectangle_'.(int)sizeof($this->rectangles);
+		
+		$this->rectangles[$this->last_key]['lat']						= $lat;
+		$this->rectangles[$this->last_key]['lon']						= $lon;
+		$this->rectangles[$this->last_key]['elat']					= $elat;
+		$this->rectangles[$this->last_key]['elon']					= $elon;
+		$this->rectangles[$this->last_key]['strokeColor']		= $strokecolor;
+		$this->rectangles[$this->last_key]['strokeWeight']	= $strokeweight;
+		$this->rectangles[$this->last_key]['strokeOpacity']	= $strokeopacity;
+		$this->rectangles[$this->last_key]['fillOpacity']		= $fillopacity;
+		$this->rectangles[$this->last_key]['fillColor']			= $fillcolor;
+		    
 		return $this;      
-			
+					
 	}
-	
-	
-	
-	
-	
+		
   
   /**
-	 * Center the map position in relation with a mark 
+	 * Center the map position in relation with an element
 	 *	       	 	 
 	 * @chainable
-	 * @param   integer  Mark id (FALSE = Center relative to the last mark)   	 	 
+	 * @param		boolean  Autofit zoom	 
+	 * @param   mixed    Mark id (FALSE = Center relative to the last element)   	 	 
 	 */
-  public function center($mark_id = FALSE)
+  public function center($autofit = TRUE, $mark_id = FALSE)
 	{
     if ($mark_id === FALSE)
     {
-      $mark_id = $this->_last_key($this->marks);
+      $mark_id = $this->last_key;     
       
-      if ($mark_id === FALSE)
-        throw new Kohana_Exception('No marks for center.');          
-    }          
-                        
-    $lat = $this->marks[$mark_id]['lat'];
-    $lon = $this->marks[$mark_id]['lon'];
+      if (empty($mark_id))
+        throw new Kohana_Exception('You need define an element.');    
+    }   
+		
+		$type = $this->_detect_type($mark_id).'s'; 
+		
+		// Calculate center
+		switch ($type)
+		{
+			case 'polygons':							
+			case 'polylines':
+																          
+				// Calculate poly center
+				$polygroup = explode('_', $mark_id);
+				
+				// Get poly bounds
+				$bounds = $this->get_bounds(array('marks', 'circles', 'rectangles'), $polygroup[1]);
+				
+				// Calculate center
+				$center = $this->_calculate_center($bounds['lat_max'], 
+																					 $bounds['lat_min'],
+																					 $bounds['lon_max'],
+																					 $bounds['lon_min']);  		
+																					 																				 																								
+			break;
+			
+			case 'rectangles':
+																								
+				// Get rectangle bounds
+				$bounds = $this->get_bounds(array('marks', 'circles', 'polylines'), $mark_id);								
+				
+				// Calculate center
+				$center = $this->_calculate_center($bounds['lat_max'], 
+																					 $bounds['lat_min'],
+																					 $bounds['lon_max'],
+																					 $bounds['lon_min']);
+																					 	 				
+								
+			break;
+			
+			default:
+			
+				$bounds['lat_max'] = $bounds['lat_min'] = $this->{$type}[$mark_id]['lat'];
+				$bounds['lon_max'] = $bounds['lon_min'] = $this->{$type}[$mark_id]['lon'];
+				
+				// Calculate other elements center
+				$center['lat'] = $this->{$type}[$mark_id]['lat'];
+    		$center['lon'] = $this->{$type}[$mark_id]['lon'];			
+		}  
+		
+		// Set last centered position
+		$this->lat = $center['lat'];
+		$this->lon = $center['lon'];    
+                            
+    $this->jscod['center'] = "map_{$this->id}.setCenter(new google.maps.LatLng({$center['lat']}, {$center['lon']}));\n";
     
-    $this->jscod['center'] = "map_{$this->id}.setCenter(new google.maps.LatLng($lat, $lon));\n";
-    
+    if ($autofit)
+    {
+  		$this->jscod['center'] .= "map_{$this->id}.fitBounds(
+			new google.maps.LatLngBounds(
+				new google.maps.LatLng({$bounds['lat_min']}, {$bounds['lon_min']}),
+				new google.maps.LatLng({$bounds['lat_max']}, {$bounds['lon_max']})
+			));\n";
+		}
+		 		
     return $this;	   
 	}
 	
@@ -297,32 +360,37 @@ abstract class Kohana_Gmaps3 {
 	 * Center and fit the map position in relation with all map elements 
 	 *	       	 	 
 	 * @chainable
-	 * @param   boolean	Autofit   	 	 
+	 * @param   boolean	Autofit zoom   	 	 
 	 * @param   array		Exclude elements (marks, polylines, circles or rectangles)   	 
 	 */
   public function center_all($autofit = TRUE, $exclude = array())
-  {
+  {  	  	
   	
-  	if ($this->_last_key($this->marks) === FALSE)
-  		throw new Kohana_Exception('No marks for center.');
+  	$bounds = $this->get_bounds($exclude);				  	  	
   	
-  	$coords = $this->get_bounds($exclude);
+  	$center = $this->_calculate_center($bounds['lat_max'], 
+																			 $bounds['lat_min'], 
+																			 $bounds['lon_max'], 
+																			 $bounds['lon_min']);
   	
-  	$max = ($coords['lat_max'] + $coords['lat_min']) / 2;
-  	$min = ($coords['lon_max'] + $coords['lon_min']) / 2;
   	
-  	$this->jscod['center'] = "map_{$this->id}.setCenter(new google.maps.LatLng($max, $min));\n";
+		// Set last centered position
+		$this->lat = $center['lat'];
+		$this->lon = $center['lon'];
+		
+		$this->jscod['center'] = "map_{$this->id}.setCenter(new google.maps.LatLng({$center['lat']}, {$center['lon']}));\n";
   	
   	if ($autofit)
   	{
   		$this->jscod['center'] .= "map_{$this->id}.fitBounds(
 				new google.maps.LatLngBounds(
-					new google.maps.LatLng({$coords['lat_min']}, {$coords['lon_min']}),
-					new google.maps.LatLng({$coords['lat_max']}, {$coords['lon_max']})
+					new google.maps.LatLng({$bounds['lat_min']}, {$bounds['lon_min']}),
+					new google.maps.LatLng({$bounds['lat_max']}, {$bounds['lon_max']})
 				));\n";
   	}
   	
-	}
+  	return $this;  	
+	}		
 	
 	/**
 	 * Get configuration configuration and options
@@ -336,48 +404,81 @@ abstract class Kohana_Gmaps3 {
 	}
 		
 	/**
-	 * Get the bounds of all map elements 
+	 * Get the bounds of all map elements or filtered elements 
 	 *	       	 	 	 	    	 	 
 	 * @param		array		Exclude elements (marks, polylines, circles or rectangles)
+	 * @param		mixed		Filter by key (Optional) 	 
 	 * @return	array   	 
 	 */
-	public function get_bounds($exclude = array())
+	public function get_bounds($exclude = array(), $keys = NULL)
 	{
 				
 		$lats = $lons = array();
 		
+		if ($keys != NULL && !is_array($keys))
+			$keys = array($keys);
+		
 		// Copy marks coordinates
 		if (!in_array('marks', $exclude))
-		{		           
-			$lats = Arr::merge(Arr::pluck($this->marks, 'lat'), $lats);
-			$lons = Arr::merge(Arr::pluck($this->marks, 'lon'), $lons);
+		{
+						
+			foreach ($this->marks as $k => $mark)
+			{
+				if ($keys == NULL || in_array($k, $keys))
+				{
+					$lats[] = $mark['lat'];
+					$lons[] = $mark['lon'];	
+				}				  
+			}		
+
 		}
 		
 		// Copy polylines coordinates
 		if (!in_array('polylines', $exclude))
-		{					
-			$lats = Arr::merge(Arr::pluck($this->coords, 'lat'), $lats);
-			$lons = Arr::merge(Arr::pluck($this->coords, 'lon'), $lons);
+		{	
+			
+			foreach ($this->coords as $k => $poly)
+			{					
+					if ($keys == NULL || in_array($k, $keys))
+					{
+						$lats = array_merge(Arr::pluck($poly, 'lat'), $lats);
+						$lons = array_merge(Arr::pluck($poly, 'lon'), $lons);
+					}
+			}					
+			
 		}
 		
 		// Copy circles coordinates
 		if (!in_array('circles', $exclude))
-		{		
-			$lats = Arr::merge(Arr::pluck($this->circles, 'lat'), $lats);
-			$lons = Arr::merge(Arr::pluck($this->circles, 'lon'), $lons);
+		{
+		
+			foreach ($this->circles as $k => $circle)
+			{
+				if ($keys == NULL || in_array($k, $keys))
+				{
+					$lats[] = $circle['lat'];
+					$lons[] = $circle['lon'];	
+				}				  
+			}	
+							
 		}
 		
-		// Copy triangles coordinates
+		// Copy rectangles coordinates
 		if (!in_array('rectangles', $exclude))
-		{	
-			foreach ($this->coords as $coords)
-			{	
-				$lats = Arr::merge(Arr::pluck($coords, 'lat'), $lats);
-				$lons = Arr::merge(Arr::pluck($coords, 'lon'), $lons);
-				
-				$lats = Arr::merge(Arr::pluck($coords, 'elat'), $lats);						
-				$lons = Arr::merge(Arr::pluck($coords, 'elon'), $lons);				
-			}
+		{
+		
+			foreach ($this->rectangles as $k => $rectangle)
+			{
+				if ($keys == NULL || in_array($k, $keys))
+				{
+					$lats[] = $rectangle['lat'];
+					$lons[] = $rectangle['lon'];
+					
+					$lats[] = $rectangle['elat'];
+					$lons[] = $rectangle['elon'];	
+				}				  
+			}	
+									
 		}
 		
 		if (sizeof($lats) && sizeof($lons))
@@ -436,21 +537,19 @@ abstract class Kohana_Gmaps3 {
 	{	 
 	 $last_key = $this->_last_key($this->infos);
 	 
-	 return $reference ? "infowindow_{$this->id}_$last_key" : $last_key;
+	 return $reference ? "infowindow_$last_key_{$this->id}" : $last_key;
 	}
 	
 				
 	/**
-	 * Get last mark key
+	 * Get last element key
 	 *	       	 	 
 	 * @param   boolean  TRUE for get javascript reference
-	 * @return  integer
+	 * @return  string
 	 */
-	public function get_mark_key($reference = FALSE)
-	{
-	 $last_key = $this->_last_key($this->marks);
-	 
-	 return $reference ? "marker_{$this->id}_$last_key" : $last_key;
+	public function get_key($reference = FALSE)
+	{	 
+	 return $reference ? "{$this->last_key}_{$this->id}" : $this->last_key;
 	}
 	
 			
@@ -499,27 +598,27 @@ abstract class Kohana_Gmaps3 {
      }
      	  	   
      // Generate markers
-     $js .= $this->_generate_markers();
-     
-     // Generate infowindows
-     $js .= $this->_generate_infowindows();
+     $js .= $this->_generate_markers();          
      
      // Generate coords groups
      $js .= $this->_generate_coords();
           
      // Generate polylines
-     if (isset($this->polys['Polyline']))
-     	$js .= $this->_generate_polys('Polyline', $this->polys);
+     if (isset($this->polys['polyline']))
+     	$js .= $this->_generate_polys('polyline', $this->polys);
      
      // Generate polygons
-     if (isset($this->polys['Polygon']))
-     	$js .= $this->_generate_polys('Polygon', $this->polys);
+     if (isset($this->polys['polygon']))
+     	$js .= $this->_generate_polys('polygon', $this->polys);
     
      // Generate circles
      $js .= $this->_generate_circles();
      
      // Generate rectangles
      $js .= $this->_generate_rectangles();
+     
+     // Generate infowindows
+     $js .= $this->_generate_infowindows();
                     
      // Generate layers
      $js .= $this->_generate_layers();
@@ -584,22 +683,7 @@ abstract class Kohana_Gmaps3 {
     $this->id = is_null($id) ? $this->id : $id;
         
     return 'map_'.$this->id;
-  } 
-  
-  
-  /**
-	 * Force auto open html window
-	 *
-	 * @param   integer  Mark key	 	  	 	 
-	 * @return  void
-	 */
-  public function open_html($mark_key)
-	{
-   // Add slashes
-   $html = str_replace('"', '\"', $this->marks[$mark_key]['html']);       
-   	
-	 $this->marks[$mark_key]['triggers'] .= "marker_{$this->id}_$mark_key.openInfoWindowHtml(\"$html\");\n";  	 	 
-	}
+  }       
 	
 	
 	/**
@@ -633,7 +717,7 @@ abstract class Kohana_Gmaps3 {
 	 * Add a poly group
 	 *
 	 * @chainable	 
-	 * @param		string	Poly type (Polyline or Polygon)	 
+	 * @param		string	Poly type (polyline or polygon)	 
 	 * @param		string	Group	 
 	 * @param   string  Stroke color in hex html value (Default '#000000')    
 	 * @param   integer Stroke line weight (Default 2)
@@ -643,7 +727,12 @@ abstract class Kohana_Gmaps3 {
 	 * @return  object 
 	 */
 	protected function _add_poly_group($type, $group, $strokecolor = '#000000', $strokeweight = 2, $strokeopacity = 1.0, $fillopacity = '0.35', $fillcolor = '#FF0000')
-	{
+	{			
+	
+		$group = Inflector::camelize($group);
+		 
+		$this->last_key = $type.'_'.$group;		
+		
     $this->polys[$type][$group] = array('strokeColor'		=> $strokecolor, 
     														 			  'strokeWeight'	=> $strokeweight,   
 																			  'strokeOpacity'	=> $strokeopacity,
@@ -671,6 +760,26 @@ abstract class Kohana_Gmaps3 {
     
 	}
 	
+	public function _calculate_center($lat_max, $lat_min, $lon_max, $lon_min)
+	{
+		return array('lat' => ($lat_max + $lat_min) / 2,
+								 'lon' => ($lon_max + $lon_min) / 2);		  		
+	}
+	
+	
+	/**
+	 * Detect the type of a key
+	 *
+	 * @param   string   Key id	 	  	 	 
+	 * @return  string   
+	 */
+	protected function _detect_type($key)
+	{
+		$separator_pos = strpos($key, '_');
+		
+		return substr($key, 0, $separator_pos);	
+	}
+	
 	
 	/**
 	 * Generate circles
@@ -684,7 +793,7 @@ abstract class Kohana_Gmaps3 {
 		
 		foreach ($this->circles as $k => $circle)
 		{
-			$js .= "\nvar circle_{$this->id}_$k = new google.maps.Circle({";
+			$js .= "\nvar {$k}_{$this->id} = new google.maps.Circle({";
 			
 			foreach ($circle as $option => $value)
 			{			 
@@ -717,7 +826,7 @@ abstract class Kohana_Gmaps3 {
 		// Generate points
 		foreach ($this->coords as $k => $points)
 		{
-			$js .= "\nvar coords_{$this->id}_".Inflector::camelize($k)." = [\n";			
+			$js .= "\nvar coords_{$k}_{$this->id} = [\n";			
 			$js .= $this->_get_points($points);			
 			$js .= "\n];\n";
 		}
@@ -736,22 +845,96 @@ abstract class Kohana_Gmaps3 {
 	{
 	
 	 $js = '';
-	 
+	    
    foreach($this->infos as $k => $infowindow)
    {	
-	              
+	  
+	  // Generate infowindow
+	  $js .= "var infowindow_{$k}_{$this->id} =  new google.maps.InfoWindow();\n";
+	  
+		foreach($infowindow as $info)
+		{
+		
+			// Add slashes
+			$content = str_replace('"', '\"', $info['content']);
+			
+			$type = $this->_detect_type($info['mark_id']);
+			 
+			if ( $type == 'mark')
+			{
+				$self_reference = ', this';
+				$position = '';
+			}
+			else
+			{
+				$self_reference = '';
+				$position = "infowindow_{$k}_{$this->id}.setPosition(e.latLng);";
+			}
+			
+			$js .= "google.maps.event.addListener({$info['mark_id']}_{$this->id}, 'click', function(e) {
+								infowindow_{$k}_{$this->id}.setContent(\"$content\");
+								$position                            								
+								infowindow_{$k}_{$this->id}.open(map_{$this->id}{$self_reference});
+            	});\n";
+      
+      // Opened
+      if ($info['opened'])
+      {      	      
+      	
+				// Center infowindow into element position
+				switch ($type)
+				{	
+					case 'polygon':							
+					case 'polyline':
+																		          
+						// Calculate poly center
+						$polygroup = explode('_', $info['mark_id']);
+						
+						// Get poly bounds
+						$bounds = $this->get_bounds(array('marks', 'circles', 'rectangles'), $polygroup[1]);
+						
+						// Calculate center
+						$center = $this->_calculate_center($bounds['lat_max'], 
+																							 $bounds['lat_min'],
+																							 $bounds['lon_max'],
+																							 $bounds['lon_min']);
+						
+						$js .= "infowindow_{$k}_{$this->id}.setPosition(new google.maps.LatLng({$center['lat']}, {$center['lon']}));\n";   		
+																							 																				 																								
+					break;
+					 				
+					case 'rectangle':																											
+						$js .= "infowindow_{$k}_{$this->id}.setPosition({$info['mark_id']}_{$this->id}.getBounds().getCenter());\n";			
+					break;
+					
+					case 'circle':
+						$js .= "infowindow_{$k}_{$this->id}.setPosition({$info['mark_id']}_{$this->id}.getCenter());\n";
+					break;
+					
+					default:
+						$self_reference = ", {$info['mark_id']}_{$this->id}";																											
+				}
+								
+				$js .= "infowindow_{$k}_{$this->id}.setContent(\"$content\");\n";								                                                                                        
+				$js .= "infowindow_{$k}_{$this->id}.open(map_{$this->id}$self_reference);\n";     		
+    	}
+				             		
+		} 
+		
+		/*           
     // Add slashes
     $infowindow['content'] = str_replace('"', '\"', $infowindow['content']);
             
-    $js .= "var infowindow_{$this->id}_$k = new google.maps.InfoWindow({
+    $js .= "var infowindow_{$k}_{$this->id} = new google.maps.InfoWindow({
               content: \"{$infowindow['content']}\"});
             
-            google.maps.event.addListener(marker_{$this->id}_{$infowindow['mark_id']}, 'click', function() {              
-              infowindow_{$this->id}_$k.open(map_{$this->id}, this);
+            google.maps.event.addListener(marker_{$infowindow['mark_id']}_{$this->id}, 'click', function() {              
+              infowindow_{$k}_{$this->id}.open(map_{$this->id}, this);
             });\n";
     
     // Opened
-    $js .= $infowindow['opened'] ? "infowindow_{$this->id}_$k.open(map_{$this->id}, marker_{$this->id}_{$infowindow['mark_id']});\n" : '';      
+    $js .= $infowindow['opened'] ? "infowindow_{$k}_{$this->id}.open(map_{$this->id}, marker_{$infowindow['mark_id']}_{$this->id});\n" : '';
+		*/      
                           
     }
     
@@ -827,13 +1010,13 @@ abstract class Kohana_Gmaps3 {
        
        if ($icon_key === FALSE)
        {              	     	            
-        $js .= "\nvar icon_{$this->id}_$k = new google.maps.MarkerImage('{$mark['icon']}',
+        $js .= "\nvar icon_{$k}_{$this->id} = new google.maps.MarkerImage('{$mark['icon']}',
                 new google.maps.Size(".implode(', ', $icon_size)."),
                 new google.maps.Point(".implode(', ', $icon_origin)."),
                 new google.maps.Point(".implode(', ', $icon_anchor)."));\n";
        
-        $icons_added["icon_{$this->id}_$k"] = $mark['icon'];
-        $icon_key = "icon_{$this->id}_$k";
+        $icons_added["icon_{$k}_{$this->id}"] = $mark['icon'];
+        $icon_key = "icon_{$k}_{$this->id}";
        }
               
        
@@ -844,13 +1027,13 @@ abstract class Kohana_Gmaps3 {
          
          if ($shadow_key === FALSE)
          {
-          $js .= "\nvar shadow_{$this->id}_$k = new google.maps.MarkerImage('{$mark['shadow']}',
+          $js .= "\nvar shadow_{$k}_{$this->id} = new google.maps.MarkerImage('{$mark['shadow']}',
                   new google.maps.Size(".implode(', ', $shadow_size)."),
                   new google.maps.Point(".implode(', ', $icon_origin)."),
                   new google.maps.Point(".implode(', ', $icon_anchor)."));\n";
          
-          $shadows_added["shadow_{$this->id}_$k"] = $mark['shadow'];
-          $shadow_key = "shadow_{$this->id}_$k";
+          $shadows_added["shadow_{$k}_{$this->id}"] = $mark['shadow'];
+          $shadow_key = "shadow_{$k}_{$this->id}";
          }
        }              
 	                                        
@@ -858,7 +1041,7 @@ abstract class Kohana_Gmaps3 {
      
      
      // Generate marker
-     $js .= "\nvar marker_{$this->id}_$k = new google.maps.Marker({
+     $js .= "\nvar {$k}_{$this->id} = new google.maps.Marker({
               position: new google.maps.LatLng({$mark['lat']}, {$mark['lon']}),
               map: map_{$this->id},
               icon: ".($mark['icon'] ? $icon_key : 'baseIcon_'.$this->id).",
@@ -949,7 +1132,7 @@ abstract class Kohana_Gmaps3 {
 	/**
 	 * Generate code for polys
 	 * 
-	 * @param		string	Poly type (Polyline or Polygon)	 
+	 * @param		string	Poly type (polyline or polygon)	 
 	 * @param		array		Poly groups	 	 	 	 
 	 *	    	 
 	 * @return  string
@@ -963,9 +1146,9 @@ abstract class Kohana_Gmaps3 {
 		foreach ($polygroups[$type] as $k => $group)
 		{
 			
-			$group_var = "group_".lcfirst($type)."_{$this->id}_".Inflector::camelize($k);
+			$group_var = "{$type}_{$k}_{$this->id}";
 			
-			$js .= "\nvar $group_var = new google.maps.$type({";
+			$js .= "\nvar $group_var = new google.maps.".ucfirst($type)."({";
 						
 			// Create group options
 			foreach ($group as $option => $value)
@@ -975,7 +1158,7 @@ abstract class Kohana_Gmaps3 {
 				$js .= ',';
 			}
 							
-			$js .= "\npath: coords_{$this->id}_".Inflector::camelize($k);
+			$js .= "\npath: coords_{$k}_{$this->id}";
 			$js .= "\n });";
 			
 			$js .= "\n$group_var.setMap(map_{$this->id});";
@@ -999,7 +1182,7 @@ abstract class Kohana_Gmaps3 {
 		
 		foreach ($this->rectangles as $k => $rectangle)
 		{
-			$js .= "\nvar rectangle_{$this->id}_$k = new google.maps.Rectangle({";
+			$js .= "\nvar {$k}_{$this->id} = new google.maps.Rectangle({";
 			
 			foreach ($rectangle as $option => $value)
 			{			 
@@ -1018,9 +1201,7 @@ abstract class Kohana_Gmaps3 {
 		
 		return $js;
 	}
-	
-	
-	
+			
 	
 	/**
 	 * Get a Geocoding Request
@@ -1084,7 +1265,7 @@ abstract class Kohana_Gmaps3 {
 		
 		$num_positions = sizeof($positions);
 		$act_position  = 1;
-				
+				     
 		foreach($positions as $position)
 		{
 			$js .= "new google.maps.LatLng({$position['lat']}, {$position['lon']})";

@@ -8,3 +8,4 @@
     - [Circles](examples/circles)
     - [Rectangles](examples/rectangles)
     - [Geocoding](examples/geocoding)
+    - [Infowindows](examples/infowindows)

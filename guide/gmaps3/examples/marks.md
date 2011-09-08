@@ -6,7 +6,7 @@
 	// We can use chainable methods
 	$map->add_mark(56.177668, 10.103302)// Coordinates	
 		->set('view_shadow', TRUE)		// View icons shadows
-		->center();						// Center map relative to this last mark
+		->center(FALSE);				// Center map relative to this mark but without autofit zoom
 		
 	
 	

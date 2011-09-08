@@ -19,11 +19,12 @@ From Kohana you can:
 - Fast setup only using config file
 - Activate and desactivate map controls
 - Choose the map language (Integrated with Kohana i18n)
-- Georequest
+- Georequest and inverse georequest
 - Create coordinates groups
-- Create infowindows
-- Trigger auto open infowindow
+- Create infowindows over marks, polygons, polylines, rectangles and circles 
+- Trigger auto open infowindows and set infowindows groups
 - Center, rotate, zoom over a defined region
+- Individual centering upon any element
 ...
 
 ## License

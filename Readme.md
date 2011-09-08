@@ -1,7 +1,7 @@
 Kohana Google Maps v3 module
 ============================
 
-GMaps3 provides to Kohana an easy way to display Google Maps v3 and use geolocation services
+GMaps3 provides to Kohana an easy way to display Google Maps v3 and use geolocation services.
 
 
 Features
@@ -22,10 +22,11 @@ From Kohana you can:
 - Fast setup only using config file
 - Activate and desactivate map controls
 - Choose the map language (Integrated with Kohana i18n)
-- Georequest
+- Georequest and inverse georequest
 - Create coordinates groups
-- Create infowindows
-- Trigger auto open infowindow
+- Create infowindows over marks, polygons, rectangles and circles  
+- Trigger auto open infowindow and set infowindows groups
 - Center, rotate, zoom and fit over a defined region
+- Individual centering upon any element
 ...
 
