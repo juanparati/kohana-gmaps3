@@ -1,12 +1,12 @@
 <?php defined('SYSPATH') OR die('No direct access allowed.');
 /**
- * Google Maps Module.
+ * Google Maps Module for Kohana 3.2.
  *
  * @package    Gmaps v3
  * @author     Juan Lago D. <juanparati[at]gmail[dot]com>  
  * @copyright  (c) 2011 Kohana
  * @license    http://kohanaphp.com/license.html
- * @version		 1.5 
+ * @version		 1.5
  */
  
 abstract class Kohana_Gmaps3 {
@@ -844,103 +844,89 @@ abstract class Kohana_Gmaps3 {
 	protected function _generate_infowindows()
 	{
 	
-	 $js = '';
+	 	$js = '';
 	    
-   foreach($this->infos as $k => $infowindow)
-   {	
+   	foreach($this->infos as $k => $infowindow)
+   	{	
 	  
-	  // Generate infowindow
-	  $js .= "var infowindow_{$k}_{$this->id} =  new google.maps.InfoWindow();\n";
-	  
-		foreach($infowindow as $info)
-		{
-		
-			// Add slashes
-			$content = str_replace('"', '\"', $info['content']);
-			
-			$type = $this->_detect_type($info['mark_id']);
-			 
-			if ( $type == 'mark')
+		  // Generate infowindow
+		  $js .= "var infowindow_{$k}_{$this->id} =  new google.maps.InfoWindow();\n";
+		  
+			foreach($infowindow as $info)
 			{
-				$self_reference = ', this';
-				$position = '';
-			}
-			else
-			{
-				$self_reference = '';
-				$position = "infowindow_{$k}_{$this->id}.setPosition(e.latLng);";
-			}
 			
-			$js .= "google.maps.event.addListener({$info['mark_id']}_{$this->id}, 'click', function(e) {
-								infowindow_{$k}_{$this->id}.setContent(\"$content\");
-								$position                            								
-								infowindow_{$k}_{$this->id}.open(map_{$this->id}{$self_reference});
-            	});\n";
-      
-      // Opened
-      if ($info['opened'])
-      {      	      
-      	
-				// Center infowindow into element position
-				switch ($type)
-				{	
-					case 'polygon':							
-					case 'polyline':
-																		          
-						// Calculate poly center
-						$polygroup = explode('_', $info['mark_id']);
-						
-						// Get poly bounds
-						$bounds = $this->get_bounds(array('marks', 'circles', 'rectangles'), $polygroup[1]);
-						
-						// Calculate center
-						$center = $this->_calculate_center($bounds['lat_max'], 
-																							 $bounds['lat_min'],
-																							 $bounds['lon_max'],
-																							 $bounds['lon_min']);
-						
-						$js .= "infowindow_{$k}_{$this->id}.setPosition(new google.maps.LatLng({$center['lat']}, {$center['lon']}));\n";   		
-																							 																				 																								
-					break;
-					 				
-					case 'rectangle':																											
-						$js .= "infowindow_{$k}_{$this->id}.setPosition({$info['mark_id']}_{$this->id}.getBounds().getCenter());\n";			
-					break;
-					
-					case 'circle':
-						$js .= "infowindow_{$k}_{$this->id}.setPosition({$info['mark_id']}_{$this->id}.getCenter());\n";
-					break;
-					
-					default:
-						$self_reference = ", {$info['mark_id']}_{$this->id}";																											
+				// Add slashes
+				$content = str_replace('"', '\"', $info['content']);
+				
+				// Convert line breaks
+				$content = str_replace(array("\r\n", "\n", "\r"), '<br />', $content);
+				
+				$type = $this->_detect_type($info['mark_id']);
+				 
+				if ( $type == 'mark')
+				{
+					$self_reference = ', this';
+					$position = '';
 				}
-								
-				$js .= "infowindow_{$k}_{$this->id}.setContent(\"$content\");\n";								                                                                                        
-				$js .= "infowindow_{$k}_{$this->id}.open(map_{$this->id}$self_reference);\n";     		
-    	}
+				else
+				{
+					$self_reference = '';
+					$position = "infowindow_{$k}_{$this->id}.setPosition(e.latLng);";
+				}
+				
+				$js .= "google.maps.event.addListener({$info['mark_id']}_{$this->id}, 'click', function(e) {
+									infowindow_{$k}_{$this->id}.setContent(\"$content\");
+									$position                            								
+									infowindow_{$k}_{$this->id}.open(map_{$this->id}{$self_reference});
+	            	});\n";
+	      
+	      // Opened
+	      if ($info['opened'])
+	      {      	      
+	      	
+					// Center infowindow into element position
+					switch ($type)
+					{	
+						case 'polygon':							
+						case 'polyline':
+																			          
+							// Calculate poly center
+							$polygroup = explode('_', $info['mark_id']);
+							
+							// Get poly bounds
+							$bounds = $this->get_bounds(array('marks', 'circles', 'rectangles'), $polygroup[1]);
+							
+							// Calculate center
+							$center = $this->_calculate_center($bounds['lat_max'], 
+																								 $bounds['lat_min'],
+																								 $bounds['lon_max'],
+																								 $bounds['lon_min']);
+							
+							$js .= "infowindow_{$k}_{$this->id}.setPosition(new google.maps.LatLng({$center['lat']}, {$center['lon']}));\n";   		
+																								 																				 																								
+						break;
+						 				
+						case 'rectangle':																											
+							$js .= "infowindow_{$k}_{$this->id}.setPosition({$info['mark_id']}_{$this->id}.getBounds().getCenter());\n";			
+						break;
+						
+						case 'circle':
+							$js .= "infowindow_{$k}_{$this->id}.setPosition({$info['mark_id']}_{$this->id}.getCenter());\n";
+						break;
+						
+						default:
+							$self_reference = ", {$info['mark_id']}_{$this->id}";																											
+					}
+									
+					$js .= "infowindow_{$k}_{$this->id}.setContent(\"$content\");\n";								                                                                                        
+					$js .= "infowindow_{$k}_{$this->id}.open(map_{$this->id}$self_reference);\n";     		
+	    	}
 				             		
-		} 
-		
-		/*           
-    // Add slashes
-    $infowindow['content'] = str_replace('"', '\"', $infowindow['content']);
-            
-    $js .= "var infowindow_{$k}_{$this->id} = new google.maps.InfoWindow({
-              content: \"{$infowindow['content']}\"});
-            
-            google.maps.event.addListener(marker_{$infowindow['mark_id']}_{$this->id}, 'click', function() {              
-              infowindow_{$k}_{$this->id}.open(map_{$this->id}, this);
-            });\n";
-    
-    // Opened
-    $js .= $infowindow['opened'] ? "infowindow_{$k}_{$this->id}.open(map_{$this->id}, marker_{$infowindow['mark_id']}_{$this->id});\n" : '';
-		*/      
-                          
-    }
-    
-    return $js;
-	 
-	 	 
+			}
+		}
+	    
+  	return $js;
+ 	 
 	}
 	
 	
