@@ -635,10 +635,11 @@ abstract class Kohana_Gmaps3 {
 	/**
 	 * Get javascript api link
 	 *
+	 * @param		boolean		Retrieve URL without enclosed tags (Default False)	 
 	 * @return  string
 	 */
 	
-	public function get_apilink()
+	public function get_apilink($only_url = FALSE)
 	{	   	            
      
      // Activate sensor
@@ -666,9 +667,10 @@ abstract class Kohana_Gmaps3 {
      
      if (!empty($libraries))
       $query .= '&libraries='.$libraries;
-          
-     	     	   
-	   return HTML::script($this->config->maps_url.$query);
+               	     	   
+	   $url = $this->config->maps_url.$query;		 		 		
+		 			      	     	  
+	   return $only_url ? $url : HTML::script($url); 
 	}
 	
 			
