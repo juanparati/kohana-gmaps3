@@ -567,7 +567,7 @@ abstract class Kohana_Gmaps3 {
 	   // Set default lat, lon and zoom if this params are null
      $lat  = is_null($lat)  ? $this->config->default_lat  : $lat;
 	   $lon  = is_null($lon)  ? $this->config->default_lon  : $lon;
-	   $zoom = is_null($zoom) ? $this->config->default_zoom : $lon;
+	   $zoom = is_null($zoom) ? $this->config->default_zoom : $zoom;
 	   	        
 
      // Set map options
