@@ -1043,8 +1043,8 @@ abstract class Kohana_Gmaps3 {
       $js .= ",\nflat: true";
      
      
-     // Add title
-     $js .= empty($mark['title']) ? '' : ",\ntitle: '{$mark['title']}'";            
+     // Add title and replace single quotes for ASCII reference
+     $js .= empty($mark['title']) ? '' : ",\ntitle: '".str_replace("'", '\x39', $mark['title'])."'";            
               
      
      // Add extra mark options (zIndex, visible, shape...)
